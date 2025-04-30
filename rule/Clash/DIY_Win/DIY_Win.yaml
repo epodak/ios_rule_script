@@ -1,5 +1,4 @@
 payload:
-- DOMAIN,claude.ai
 - DOMAIN,cdn.usefathom.com
 - DOMAIN,usage.readdle.com
 - DOMAIN,api.amplitude.com
@@ -28,5 +27,3 @@ payload:
 - PROCESS-NAME,trae.exe
 - PROCESS-NAME,ai.exe
 - DOMAIN-SUFFIX,cnbeta.com.tw
-- DOMAIN-SUFFIX,cnbetabeta.com.tw
-- DOMAIN-SUFFIX,cnbetabetacd.com.tw

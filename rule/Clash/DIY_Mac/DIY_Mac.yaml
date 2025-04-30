@@ -1,6 +1,5 @@
 payload:
   # DOMAIN 规则
-  - DOMAIN,claude.ai
   - DOMAIN,cdn.usefathom.com
   - DOMAIN,usage.readdle.com
   - DOMAIN,api.amplitude.com
