@@ -1,0 +1,55 @@
+# .github/workflows/merge-upstream.yml
+
+name: Merge Upstream Changes (blackmatrix7/ios_rule_script)
+
+on:
+  schedule:
+    # 設定排程：例如，每 24 小時嘗試合併一次
+    - cron: '0 */24 * * *'
+  workflow_dispatch: # 允許手動從 Actions 頁面觸發
+
+jobs:
+  merge-upstream:
+    runs-on: ubuntu-latest
+
+    # 確保這個 Action 只在你的 Fork 上執行
+    if: github.repository == 'epodak/ios_rule_script'
+
+    steps:
+      # 步驟 1: Checkout 目前的倉庫 (你的 Fork)
+      # fetch-depth: 0 拉取所有歷史紀錄，這對於 merge/rebase 是必要的
+      # token: 使用 PAT 以便後續有權限 push
+      - name: Checkout Fork Repo (epodak/ios_rule_script)
+        uses: actions/checkout@v4
+        with:
+          ref: 'master' # 確保 Checkout 的是 master 分支
+          token: ${{ secrets.PAT }}
+          fetch-depth: 0 # 拉取完整歷史
+
+      # 步驟 2: 設定 Git 使用者資訊
+      # 這是執行 merge commit 時需要的
+      - name: Set Git config
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      # 步驟 3: 添加上游倉庫作為 remote
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/blackmatrix7/ios_rule_script.git
+
+      # 步驟 4: 拉取上游倉庫的最新變更
+      - name: Fetch upstream changes
+        run: git fetch upstream master
+
+      # 步驟 5: 嘗試將上游 master 分支合併到本地 master 分支
+      # --no-edit: 自動產生合併訊息，不開啟編輯器
+      # --ff-only: (可選) 如果只想在可以 fast-forward 時才合併，加上這個。但通常需要合併commit。
+      # 如果發生衝突，這一步會失敗
+      - name: Try merging upstream/master into master
+        run: |
+          git merge upstream/master --no-edit
+        # 注意：如果發生合併衝突，此步驟將失敗，Workflow 會停止
+
+      # 步驟 6: 將合併後的結果 (或未變更的狀態) 推送到你的 Fork
+      - name: Push changes to origin (epodak/ios_rule_script)
+        run: git push origin master
