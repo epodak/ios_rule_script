@@ -1,34 +1,30 @@
 payload:
-  # DOMAIN 规则
-  - DOMAIN,claude.ai
-  - DOMAIN,cdn.usefathom.com
-  - DOMAIN,usage.readdle.com
-  - DOMAIN,api.amplitude.com
-  - DOMAIN,app.smartmailcloud.com
-
-  # DOMAIN-SUFFIX 规则
-  - DOMAIN-SUFFIX,yeka.ai
-  - DOMAIN-SUFFIX,yourware.app
-  - DOMAIN-SUFFIX,enjoy.bot
-  - DOMAIN-SUFFIX,affine.pro
-  - DOMAIN-SUFFIX,linux.do
-  - DOMAIN-SUFFIX,vusercontent.net
-  - DOMAIN-SUFFIX,grok.com
-  - DOMAIN-SUFFIX,lmarena.ai
-  - DOMAIN-SUFFIX,newapi.pro
-  - DOMAIN-SUFFIX,higgsfield.ai
-  - DOMAIN-SUFFIX,bewildcard.com
-  - DOMAIN-SUFFIX,xfwxfte.xyz
-  - DOMAIN-SUFFIX,zntdszs.xyz
-  - DOMAIN-SUFFIX,51cg.fun
-  - DOMAIN-SUFFIX,51bl.lol
-  - DOMAIN-SUFFIX,heroku.com
-  - DOMAIN-SUFFIX,edu-mail.net
-  - DOMAIN-SUFFIX,nodeloc.com
-  - DOMAIN-SUFFIX,hockeyapp.net
-  - DOMAIN-SUFFIX,firebaseio.com
-
-  # PROCESS-NAME 规则
-  - PROCESS-NAME,cursor.exe
-  - PROCESS-NAME,trae.exe
-  - PROCESS-NAME,ai.exe
+- DOMAIN,claude.ai
+- DOMAIN,cdn.usefathom.com
+- DOMAIN,usage.readdle.com
+- DOMAIN,api.amplitude.com
+- DOMAIN,app.smartmailcloud.com
+- DOMAIN-SUFFIX,yeka.ai
+- DOMAIN-SUFFIX,yourware.app
+- DOMAIN-SUFFIX,enjoy.bot
+- DOMAIN-SUFFIX,affine.pro
+- DOMAIN-SUFFIX,linux.do
+- DOMAIN-SUFFIX,vusercontent.net
+- DOMAIN-SUFFIX,grok.com
+- DOMAIN-SUFFIX,lmarena.ai
+- DOMAIN-SUFFIX,newapi.pro
+- DOMAIN-SUFFIX,higgsfield.ai
+- DOMAIN-SUFFIX,bewildcard.com
+- DOMAIN-SUFFIX,xfwxfte.xyz
+- DOMAIN-SUFFIX,zntdszs.xyz
+- DOMAIN-SUFFIX,51cg.fun
+- DOMAIN-SUFFIX,51bl.lol
+- DOMAIN-SUFFIX,heroku.com
+- DOMAIN-SUFFIX,edu-mail.net
+- DOMAIN-SUFFIX,nodeloc.com
+- DOMAIN-SUFFIX,hockeyapp.net
+- DOMAIN-SUFFIX,firebaseio.com
+- PROCESS-NAME,cursor.exe
+- PROCESS-NAME,trae.exe
+- PROCESS-NAME,ai.exe
+- DOMAIN-SUFFIX,cnbeta.com.tw
