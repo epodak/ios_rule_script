@@ -27,3 +27,4 @@ payload:
 - PROCESS-NAME,trae.exe
 - PROCESS-NAME,ai.exe
 - DOMAIN-SUFFIX,cnbeta.com.tw
+- DOMAIN-SUFFIX,perplexity.ai
