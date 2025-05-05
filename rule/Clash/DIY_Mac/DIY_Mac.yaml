@@ -30,3 +30,5 @@ payload:
 - DOMAIN-SUFFIX,ping0.cc
 - DOMAIN-SUFFIX,v1.mk
 - DOMAIN-SUFFIX,youtube.com
+- DOMAIN,guzzoni.apple.com
+- DOMAIN,api.smoot.apple.com
