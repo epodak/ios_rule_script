@@ -32,5 +32,9 @@ payload:
 - DOMAIN-SUFFIX,youtube.com
 - DOMAIN,guzzoni.apple.com
 - DOMAIN,api.smoot.apple.com
+- DOMAIN-SUFFIX,cursor-cdn.com
+- DOMAIN-SUFFIX,cursor.com
 - DOMAIN-SUFFIX,cursor.sh
+- DOMAIN-SUFFIX,cursor.so
+- DOMAIN-SUFFIX,cursorapi.com
 - DOMAIN-SUFFIX,google.com
