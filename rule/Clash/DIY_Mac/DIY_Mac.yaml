@@ -33,3 +33,4 @@ payload:
 - DOMAIN,guzzoni.apple.com
 - DOMAIN,api.smoot.apple.com
 - DOMAIN-SUFFIX,cursor.sh
+- DOMAIN-SUFFIX,google.com
