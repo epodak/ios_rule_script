@@ -1,0 +1,40 @@
+payload:
+  # HuggingFace 生态系统
+  - DOMAIN-SUFFIX,hf.co
+  - DOMAIN-SUFFIX,huggingface.co
+  - DOMAIN-SUFFIX,hf-mirror.com
+  - DOMAIN-SUFFIX,aifasthub.com
+  - DOMAIN-SUFFIX,cdn-lfs.huggingface.co
+  - DOMAIN-SUFFIX,cdn-lfs.hf-mirror.com
+  
+
+  # 软件分发平台
+  - DOMAIN-SUFFIX,sourceforge.net
+  - DOMAIN-SUFFIX,fosshub.com
+  
+  # Docker 镜像下载
+  - DOMAIN-SUFFIX,docker.io
+  - DOMAIN-SUFFIX,docker.com
+  - DOMAIN-SUFFIX,registry-1.docker.io
+  - DOMAIN-SUFFIX,production.cloudflare.docker.com
+  - DOMAIN-SUFFIX,quay.io
+  - DOMAIN-SUFFIX,gcr.io
+  - DOMAIN-SUFFIX,k8s.gcr.io
+
+  # Ubuntu 生态系统 - 大容量下载
+  - DOMAIN-SUFFIX,ubuntu.com
+  - DOMAIN-SUFFIX,ubuntu.org
+  - DOMAIN-SUFFIX,ubuntu.org.cn
+  - DOMAIN-SUFFIX,canonical.com
+  - DOMAIN-SUFFIX,snapcraft.io
+  
+  # Ubuntu Ports (ARM等其他架构)
+  - DOMAIN-SUFFIX,ports.ubuntu.com
+  
+  # Ubuntu 软件包仓库
+  - DOMAIN-SUFFIX,security.ubuntu.com
+  - DOMAIN-SUFFIX,archive.canonical.com
+  
+  # 其他 Ubuntu 相关大文件下载
+  - DOMAIN-SUFFIX,launchpad.net
+  - DOMAIN-SUFFIX,launchpadlibrarian.net
