@@ -1,0 +1,178 @@
+name: 🔄 从dev分支同步master
+
+on:
+  schedule:
+    # 每天北京时间早上8点执行 (UTC 0点)
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # 允许手动触发
+  push:
+    branches:
+      - dev  # 当dev分支有推送时也触发
+
+jobs:
+  sync-master:
+    runs-on: ubuntu-latest
+    if: github.repository == 'epodak/ios_rule_script'
+    
+    steps:
+    - name: 🚀 检出dev分支
+      uses: actions/checkout@v4
+      with:
+        ref: dev
+        fetch-depth: 0  # 获取完整历史
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: 📋 配置Git用户
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+
+    - name: 🔗 添加和配置远程仓库
+      run: |
+        git remote add upstream https://github.com/blackmatrix7/ios_rule_script.git || true
+        git remote set-url upstream https://github.com/blackmatrix7/ios_rule_script.git
+
+    - name: 📥 获取所有远程更新
+      run: |
+        git fetch upstream
+        git fetch origin
+        echo "📋 远程分支状态："
+        git branch -r
+
+    - name: 🌿 切换到master分支
+      run: |
+        git checkout master || git checkout -b master origin/master
+        echo "📋 当前master状态："
+        git log --oneline -3 || echo "master分支为空"
+
+    - name: 📊 检查上游更新
+      run: |
+        echo "📋 上游最新状态："
+        git log upstream/master --oneline -3
+        
+        # 检查是否有上游更新
+        UPSTREAM_COMMIT=$(git rev-parse upstream/master)
+        CURRENT_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "empty")
+        
+        echo "📊 提交信息："
+        echo "  当前master: $CURRENT_COMMIT"
+        echo "  上游master: $UPSTREAM_COMMIT"
+        
+        if [ "$UPSTREAM_COMMIT" = "$CURRENT_COMMIT" ]; then
+          echo "✅ master已经是最新版本"
+          echo "UPSTREAM_UPDATED=false" >> $GITHUB_ENV
+        else
+          echo "🔄 发现上游更新，需要同步..."
+          echo "UPSTREAM_UPDATED=true" >> $GITHUB_ENV
+        fi
+
+    - name: ⚡ 强制同步上游到master
+      if: env.UPSTREAM_UPDATED == 'true' || github.event_name == 'workflow_dispatch'
+      run: |
+        echo "🔄 开始强制同步上游..."
+        
+        # 备份当前master状态（如果有的话）
+        if git rev-parse HEAD >/dev/null 2>&1; then
+          git tag backup-master-$(date +%Y%m%d-%H%M%S) || true
+          echo "💾 已创建备份标签"
+        fi
+        
+        # 强制重置到上游最新版本
+        git reset --hard upstream/master
+        echo "✅ master分支已强制同步到上游最新版本"
+
+    - name: 🔧 从dev分支复制个人文件
+      run: |
+        echo "🔄 开始从dev分支复制个人文件..."
+        
+        # 定义个人文件列表
+        PERSONAL_FILES=(
+          "rule/Clash/Cursor/Cursor.yaml"
+          "rule/Clash/DIY_Mac/DIY_Mac.yaml" 
+          "rule/Clash/DIY_Win/DIY_Win.yaml"
+          "rule/Clash/Download_huge/Download_huge.yaml"
+          "rule/Clash/Download_huge/README.md"
+          "rule/Clash/porn_list/porn_list.yaml"
+          "rule/Clash/porn_video/porn_video.yaml"
+        )
+        
+        echo "📋 准备复制的个人文件："
+        FILES_COPIED=0
+        FILES_MISSING=0
+        
+        for file in "${PERSONAL_FILES[@]}"; do
+          if git show origin/dev:"$file" >/dev/null 2>&1; then
+            echo "  ✅ $file"
+            mkdir -p "$(dirname "$file")"
+            git show origin/dev:"$file" > "$file"
+            FILES_COPIED=$((FILES_COPIED + 1))
+          else
+            echo "  ❌ $file (dev分支中不存在)"
+            FILES_MISSING=$((FILES_MISSING + 1))
+          fi
+        done
+        
+        echo "📊 文件复制统计："
+        echo "  ✅ 成功复制: $FILES_COPIED 个文件"
+        echo "  ❌ 缺失文件: $FILES_MISSING 个文件"
+        
+        echo "PERSONAL_FILES_COPIED=$FILES_COPIED" >> $GITHUB_ENV
+        echo "PERSONAL_FILES_MISSING=$FILES_MISSING" >> $GITHUB_ENV
+
+    - name: 💾 提交master分支的更改
+      run: |
+        git add .
+        
+        if git diff --staged --quiet; then
+          echo "✨ master分支没有需要提交的更改"
+          echo "MASTER_CHANGES_COMMITTED=false" >> $GITHUB_ENV
+        else
+          # 生成详细的提交信息
+          COMMIT_MSG="🤖 自动同步 $(date '+%Y-%m-%d %H:%M:%S')"
+          
+          if [ "${UPSTREAM_UPDATED:-false}" = "true" ]; then
+            UPSTREAM_HASH=$(git rev-parse upstream/master | cut -c1-7)
+            COMMIT_MSG="$COMMIT_MSG"$'\n'"📥 强制同步上游: $UPSTREAM_HASH"
+          fi
+          
+          if [ "${PERSONAL_FILES_COPIED:-0}" -gt 0 ]; then
+            COMMIT_MSG="$COMMIT_MSG"$'\n'"🔧 从dev分支复制个人配置: ${PERSONAL_FILES_COPIED} 个文件"
+          fi
+          
+          git commit -m "$COMMIT_MSG"
+          echo "✅ master分支更改已提交"
+          echo "MASTER_CHANGES_COMMITTED=true" >> $GITHUB_ENV
+        fi
+
+    - name: 📤 推送master分支到远程
+      if: env.MASTER_CHANGES_COMMITTED == 'true' || env.UPSTREAM_UPDATED == 'true'
+      run: |
+        echo "📤 推送master分支到远程仓库..."
+        git push origin master --force-with-lease
+        echo "✅ master分支推送完成"
+
+    - name: 📊 输出同步摘要
+      run: |
+        echo "## 📋 同步摘要" >> $GITHUB_STEP_SUMMARY
+        echo "- **执行时间**: $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "- **触发方式**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **上游是否更新**: ${UPSTREAM_UPDATED:-false}" >> $GITHUB_STEP_SUMMARY
+        echo "- **个人文件复制**: ${PERSONAL_FILES_COPIED:-0} 个成功, ${PERSONAL_FILES_MISSING:-0} 个缺失" >> $GITHUB_STEP_SUMMARY
+        echo "- **master分支是否有提交**: ${MASTER_CHANGES_COMMITTED:-false}" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${MASTER_CHANGES_COMMITTED:-false}" = "true" ]; then
+          echo "- **最新提交**: $(git log --oneline -1)" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔄 工作流程说明" >> $GITHUB_STEP_SUMMARY
+        echo "1. 🌿 从dev分支触发同步" >> $GITHUB_STEP_SUMMARY
+        echo "2. ⚡ 强制将master重置到上游最新版本" >> $GITHUB_STEP_SUMMARY
+        echo "3. 🔧 从dev分支复制个人配置文件" >> $GITHUB_STEP_SUMMARY
+        echo "4. 📤 推送更新后的master分支" >> $GITHUB_STEP_SUMMARY
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔗 相关链接" >> $GITHUB_STEP_SUMMARY
+        echo "- [上游仓库](https://github.com/blackmatrix7/ios_rule_script)" >> $GITHUB_STEP_SUMMARY
+        echo "- [当前仓库master分支](https://github.com/${{ github.repository }}/tree/master)" >> $GITHUB_STEP_SUMMARY
+        echo "- [当前仓库dev分支](https://github.com/${{ github.repository }}/tree/dev)" >> $GITHUB_STEP_SUMMARY 
