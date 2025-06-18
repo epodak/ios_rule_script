@@ -1,1 +1,86 @@
- 
+name: 🔄 同步上游并合并 dev 分支
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'  # 每天凌晨2点执行
+
+env:
+  UPSTREAM_REPO: https://github.com/blackmatrix7/ios_rule_script.git
+  UPSTREAM_BRANCH: master
+  TARGET_BRANCH: master
+  DEV_BRANCH: dev
+
+jobs:
+  sync-and-merge:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🚀 检出代码 (包含所有分支历史)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📋 配置 Git 用户
+        run: |
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "actions@github.com"
+
+      - name: 🔗 配置并拉取上游仓库
+        run: |
+          git remote add upstream ${{ env.UPSTREAM_REPO }} || git remote set-url upstream ${{ env.UPSTREAM_REPO }}
+          git fetch --all
+
+      - name: 🌿 准备 master 分支
+        run: |
+          if git show-ref --verify --quiet refs/heads/${{ env.TARGET_BRANCH }}; then
+            git checkout ${{ env.TARGET_BRANCH }}
+          elif git show-ref --verify --quiet refs/remotes/origin/${{ env.TARGET_BRANCH }}; then
+            git checkout -b ${{ env.TARGET_BRANCH }} origin/${{ env.TARGET_BRANCH }}
+          else
+            git checkout -b ${{ env.TARGET_BRANCH }} upstream/${{ env.UPSTREAM_BRANCH }}
+          fi
+
+      - name: "步骤 1: 强制 master 与上游同步"
+        id: sync_upstream
+        run: |
+          echo "当前 master commit: $(git rev-parse HEAD)"
+          echo "上游 ${UPSTREAM_BRANCH} commit: $(git rev-parse upstream/${UPSTREAM_BRANCH})"
+          git reset --hard upstream/${{ env.UPSTREAM_BRANCH }}
+          echo "✅ master 分支已严格同步到上游。"
+          echo "UPSTREAM_COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      
+      - name: "🧩 步骤 2: 合并 dev 分支"
+        id: merge_dev
+        run: |
+          git merge ${{ env.DEV_BRANCH }} --allow-unrelated-histories --strategy-option theirs -m "chore(auto): Merge dev branch modifications after upstream sync"
+          echo "✅ dev 分支已成功合并到 master。"
+          echo "MERGED_DEV_COMMIT=$(git rev-parse --short ${{ env.DEV_BRANCH }})" >> $GITHUB_OUTPUT
+
+      - name: "📤 步骤 3: 推送最终的 master 分支"
+        run: |
+          if git diff --quiet origin/${{ env.TARGET_BRANCH }}; then
+            echo "✨ master 分支内容与远程一致，无需推送。"
+          else
+            echo "📤 推送更新后的 master 分支..."
+            git fetch origin --prune
+            git push origin ${{ env.TARGET_BRANCH }} --force
+            echo "✅ 推送完成。"
+          fi
+
+      - name: 📊 输出同步摘要
+        if: always()
+        run: |
+          echo "## 🔄 同步与合并摘要" >> $GITHUB_STEP_SUMMARY
+          echo "- **执行时间**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **触发方式**: \`${{ github.event_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "### 流程执行情况" >> $GITHUB_STEP_SUMMARY
+          echo "1. **同步上游**: ✅ 将 \`${{ env.TARGET_BRANCH }}\` 分支重置到 \`upstream/${{ env.UPSTREAM_BRANCH }}\` (Commit: \`${{ steps.sync_upstream.outputs.UPSTREAM_COMMIT }}\`)" >> $GITHUB_STEP_SUMMARY
+          echo "2. **合并dev**: ✅ 将 \`${{ env.DEV_BRANCH }}\` 分支 (Commit: \`${{ steps.merge_dev.outputs.MERGED_DEV_COMMIT }}\`) 合并入 \`${{ env.TARGET_BRANCH }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. **推送结果**: ✅ 已将最终结果强制推送到 \`origin/${{ env.TARGET_BRANCH }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 最终结果" >> $GITHUB_STEP_SUMMARY
+          echo "- **查看最新 master 分支**: [${{ github.repository }}/tree/${{ env.TARGET_BRANCH }}](https://github.com/${{ github.repository }}/tree/${{ env.TARGET_BRANCH }})" >> $GITHUB_STEP_SUMMARY
+          echo "- **最新提交信息**: \`$(git log -1 --pretty=%s)\`" >> $GITHUB_STEP_SUMMARY
