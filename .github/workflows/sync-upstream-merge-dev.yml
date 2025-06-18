@@ -50,13 +50,29 @@ jobs:
           git reset --hard upstream/${{ env.UPSTREAM_BRANCH }}
           echo "✅ master 分支已严格同步到上游。"
           echo "UPSTREAM_COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: "🔄 步骤 1.5: 更新远程分支信息"
+        run: |
+          echo "📡 更新远程分支信息..."
+          git fetch origin --prune
+          echo "✅ 远程分支信息已更新。"
       
       - name: "🧩 步骤 2: 合并 dev 分支"
         id: merge_dev
         run: |
-          git merge ${{ env.DEV_BRANCH }} --allow-unrelated-histories --strategy-option theirs -m "chore(auto): Merge dev branch modifications after upstream sync"
+          # 确保我们有dev分支的最新内容
+          if git show-ref --verify --quiet refs/heads/${{ env.DEV_BRANCH }}; then
+            echo "本地dev分支存在，使用本地分支"
+            git merge ${{ env.DEV_BRANCH }} --allow-unrelated-histories --strategy-option theirs -m "chore(auto): Merge dev branch modifications after upstream sync"
+          elif git show-ref --verify --quiet refs/remotes/origin/${{ env.DEV_BRANCH }}; then
+            echo "使用远程dev分支进行合并"
+            git merge origin/${{ env.DEV_BRANCH }} --allow-unrelated-histories --strategy-option theirs -m "chore(auto): Merge dev branch modifications after upstream sync"
+          else
+            echo "⚠️ 警告: 未找到dev分支，跳过合并"
+            exit 0
+          fi
           echo "✅ dev 分支已成功合并到 master。"
-          echo "MERGED_DEV_COMMIT=$(git rev-parse --short ${{ env.DEV_BRANCH }})" >> $GITHUB_OUTPUT
+          echo "MERGED_DEV_COMMIT=$(git rev-parse --short origin/${{ env.DEV_BRANCH }})" >> $GITHUB_OUTPUT
 
       - name: "📤 步骤 3: 推送最终的 master 分支"
         run: |
