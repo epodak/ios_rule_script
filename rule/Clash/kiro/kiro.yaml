@@ -3,3 +3,5 @@ payload:
   - DOMAIN-SUFFIX,kiro.dev
   - DOMAIN-SUFFIX,amazonaws.com
   - DOMAIN-SUFFIX,openvsxorg.blob.core.windows.net
+  - DOMAIN-SUFFIX,database-client.com
+  - DOMAIN-SUFFIX,gitflic.ru
