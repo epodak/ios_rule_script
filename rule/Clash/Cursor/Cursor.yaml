@@ -1,5 +1,4 @@
 payload:
-  - PROCESS-NAME,cursor.exe
   - DOMAIN-SUFFIX,cursor-cdn.com
   - DOMAIN-SUFFIX,cursor.com
   - DOMAIN-SUFFIX,cursor.sh
